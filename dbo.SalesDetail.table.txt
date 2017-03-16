@@ -1,0 +1,18 @@
+USE [nissimDW]
+GO
+/****** Object:  Table [dbo].[SalesDetail]    Script Date: 3/13/2017 1:11:56 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SalesDetail](
+	[SalesDetailID] [int] NULL,
+	[SalesHeaderID] [int] NULL,
+	[ProductID] [int] NULL,
+	[SalesQuantity] [int] NULL,
+	[SalesAmount] [numeric](18, 2) NULL,
+	[CreatedDate] [datetime] NULL,
+	[CreatedBy] [nvarchar](255) NULL,
+	[ModifiedDate] [datetime] NULL,
+	[ModifiedBy] [nvarchar](255) NULL
+) ON [PRIMARY]
