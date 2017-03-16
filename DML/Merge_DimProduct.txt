@@ -1,0 +1,55 @@
+MERGE [nissimDW].[dbo].[DimProduct] as T
+USING 
+(SELECT P.ProductID,P.ProductTypeID,PT.ProductCategoryID,P.Product,PT.ProductType,PC.ProductCategory,P.Color,P.Style,P.Weight,P.Cost,P.WholesalePrice,P.Price 
+FROM Product P inner join ProductType PT
+on P.ProductTypeID=PT.ProductTypeID
+inner join ProductCategory PC
+on PT.ProductCategoryID=PC.ProductCategoryID
+) as S
+
+ON (T.ProductID=S.ProductID AND T.ProductTypeID=S.ProductTypeID AND T.ProductCategoryID=S.ProductCategoryID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (ProductID,ProductTypeID,ProductCategoryID,Product,ProductType,ProductCategory,Color,Style,Weight,Cost,WholesalePrice,Price)
+	VALUES (S.ProductID,S.ProductTypeID,S.ProductCategoryID,S.Product,S.ProductType,S.ProductCategory,S.Color,S.Style,S.Weight,S.Cost,S.WholesalePrice,S.Price )
+
+WHEN MATCHED THEN 
+	UPDATE SET T.Product=S.Product,T.ProductType=S.ProductType, T.ProductCategory=S.ProductCategory,T.COst=S.Cost,T.WholesalePrice=S.WholesalePrice,T.Price=S.Price
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;
+	
+	
+	
+SET IDENTITY_INSERT dbo.DimProduct ON;
+
+  INSERT INTO [dbo].[DimProduct]
+           ([ProductKey]
+		   ,[ProductID]
+           ,[ProductTypeID]
+           ,[ProductCategoryID]
+           ,[Product]
+           ,[ProductType]
+           ,[ProductCategory]
+           ,[Color]
+           ,[Style]
+           ,[Weight]
+           ,[Cost]
+           ,[WholesalePrice]
+		   ,[Price])
+     VALUES
+           (-1
+		   ,-1
+           ,-1
+           ,-1
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,-1
+           ,-1
+           ,-1
+		   ,-1);
+
+  SET IDENTITY_INSERT dbo.DimProduct OFF;

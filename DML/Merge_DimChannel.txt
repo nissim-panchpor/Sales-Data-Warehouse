@@ -1,0 +1,35 @@
+MERGE [nissimDW].[dbo].[DimChannel] as T
+USING (SELECT C.ChannelID,C.ChannelCategoryID,C.Channel,CC.ChannelCategory from [nissimDW].[dbo].[Channel] C inner join [nissimDW].[dbo].[ChannelCategory] CC
+on C.ChannelCategoryID=CC.ChannelCategoryID) as S
+
+ON (T.ChannelID=S.ChannelID AND T.ChannelCategoryID=S.ChannelCategoryID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (ChannelID,ChannelCategoryID,Channel,ChannelCategory)
+	VALUES (S.ChannelID,S.ChannelCategoryID,S.Channel,S.ChannelCategory)
+
+WHEN MATCHED THEN 
+	UPDATE SET T.Channel=S.Channel
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;
+	
+	
+SET IDENTITY_INSERT dbo.DimChannel ON;
+
+INSERT INTO [dbo].[DimChannel]
+           ([ChannelKey]
+           ,[ChannelID]
+           ,[ChannelCategoryID]
+           ,[Channel]
+           ,[ChannelCategory])
+     VALUES
+           (-1
+           ,-1
+           ,-1
+           ,'UNKNOWN'
+           ,'UNKNOWN');
+
+
+
+  SET IDENTITY_INSERT dbo.DimChannel OFF;

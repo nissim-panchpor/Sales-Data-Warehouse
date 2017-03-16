@@ -1,0 +1,41 @@
+MERGE [nissimDW].[dbo].[DimReseller] as T
+USING (SELECT R.ResellerID, R.Contact, R.EmailAddress, R.PhoneNumber, R.ResellerName, L.LocationKey 
+FROM dbo.Reseller R inner join dbo.DimLocation L
+on (R.Address=L.Address AND R.City=L.City AND R.StateProvince=L.StateProvince
+AND R.Country=L.Country AND R.PostalCode=L.PostalCode) ) as S
+
+ON (T.ResellerID=S.ResellerID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (ResellerID, Contact, EmailAddress, PhoneNumber, ResellerName, LocationKey)
+	VALUES (S.ResellerID, S.Contact, S.EmailAddress, S.PhoneNumber, S.ResellerName, S.LocationKey)
+
+WHEN MATCHED THEN 
+	UPDATE SET T.Contact=S.Contact, T.EmailAddress=S.EmailAddress, T.PhoneNumber=S.PhoneNumber, T.LocationKey=S.LocationKey
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;
+	
+	
+SET IDENTITY_INSERT dbo.DimReseller ON;
+
+INSERT INTO [dbo].[DimReseller]
+           ([ResellerKey]
+		   ,[ResellerID]
+           ,[ResellerName]
+           ,[Contact]
+           ,[EmailAddress]
+           ,[PhoneNumber]
+           ,[LocationKey])
+     VALUES
+           (-1
+		   ,-1
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,-1);
+
+
+
+  SET IDENTITY_INSERT dbo.DimReseller OFF;

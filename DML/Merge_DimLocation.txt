@@ -1,0 +1,51 @@
+MERGE [nissimDW].[dbo].[DimLocation] as T
+USING 
+(SELECT [Address] ,[City],[StateProvince],[Country],[PostalCode]
+FROM [nissimDW].[dbo].[Reseller]
+Union
+SELECT [Address],[City],[StateProvince],[Country],[PostalCode]
+FROM [nissimDW].[dbo].[Customer]
+Union
+SELECT [Address],[City] ,[StateProvince],[Country] ,[PostalCode]
+FROM [nissimDW].[dbo].[Store]
+) as S
+
+ON (T.Address=S.Address AND T.City=S.City AND T.StateProvince=S.StateProvince AND T.Country=S.Country AND T.PostalCode=S.PostalCode)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (Address,City ,StateProvince,Country ,PostalCode)
+	VALUES (S.Address,S.City ,S.StateProvince,S.Country ,S.PostalCode )
+
+WHEN MATCHED THEN 
+	UPDATE SET T.Address=S.Address , T.City=S.City , T.StateProvince=S.StateProvince , 
+	T.Country=S.Country ,T.PostalCode=S.PostalCode
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;
+	
+	
+IF NOT EXISTS (SELECT * FROM dbo.DimLocation WHERE LocationKey = '-1')
+
+BEGIN
+   SET IDENTITY_INSERT dbo.DimLocation ON;
+
+INSERT INTO dbo.DimLocation
+( LocationKey
+  ,Address
+  ,City
+  ,StateProvince
+  ,Country
+  ,PostalCode
+  )
+  VALUES
+  (
+  -1
+  ,'UNKNOWN'
+  ,'UNKNOWN'
+  ,'UNKNOWN'
+  ,'UNKNOWN'
+  ,'UNKNOWN'
+  );
+
+  SET IDENTITY_INSERT dbo.DimLocation OFF;
+END

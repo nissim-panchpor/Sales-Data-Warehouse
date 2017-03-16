@@ -1,0 +1,39 @@
+MERGE [nissimDW].[dbo].[DimStore] as T
+USING (SELECT A.StoreID , A.StoreNumber , A.StoreManager, A.PhoneNumber, L.LocationKey 
+FROM dbo.Store A inner join dbo.DimLocation L
+on (A.Address=L.Address AND A.City=L.City AND A.StateProvince=L.StateProvince
+AND A.Country=L.Country AND A.PostalCode=L.PostalCode) ) as S
+
+ON (T.StoreID=S.StoreID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (StoreID , StoreNumber, StoreManager, PhoneNumber, LocationKey )
+	VALUES (S.StoreID , S.StoreNumber, S.StoreManager, S.PhoneNumber, S.LocationKey)
+
+WHEN MATCHED THEN 
+	UPDATE SET T.StoreNumber=S.StoreNumber, T.StoreManager=S.StoreManager, T.PhoneNumber=S.PhoneNumber, T.LocationKey=S.LocationKey
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;
+	
+	
+SET IDENTITY_INSERT dbo.DimStore ON;
+
+INSERT INTO [dbo].[DimStore]
+           (StoreKey
+	,StoreID 
+	,StoreNumber 
+	,StoreManager
+	,PhoneNumber 
+	,LocationKey )
+     VALUES
+           (-1
+	,-1
+           ,-1
+           ,'UNKNOWN'
+           ,'UNKNOWN'
+           ,-1);
+
+
+
+ SET IDENTITY_INSERT dbo.DimStore OFF;

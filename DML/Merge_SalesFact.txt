@@ -1,0 +1,63 @@
+MERGE [nissimDW].[dbo].[SalesFact] as T
+USING 
+( 
+
+SELECT S.SalesDetailID
+--,S.SalesHeaderID
+,ISNULL(D.DimDateID, -1) as DateKey
+,ISNULL(P.ProductKey, -1) as ProductKey
+,ISNULL(C.ChannelKey, -1) as ChannelKey
+,ISNULL(T.StoreKey, -1) as StoreKey
+,ISNULL(M.CustomerKey, -1) as CustomerKey
+,ISNULL(R.ResellerKey, -1) as ResellerKey
+,P.Cost as Cost
+,CASE WHEN H.ResellerID IS NOT NULL then P.WholeSalePrice ELSE P.Price END as Price
+,S.SalesQuantity
+,S.SalesAmount
+,S.SalesAmount-(P.Cost * S.SalesQuantity) as Profit
+		
+  FROM dbo.SalesDetail as S
+  INNER JOIN
+  dbo.SalesHeader as H
+  on S.SalesHeaderID=H.SalesHeaderID
+
+  LEFT OUTER JOIN
+  dbo.DimDate as D
+  on H.Date=D.FullDate
+
+  LEFT OUTER JOIN
+  dbo.DimProduct as P
+  on S.ProductID=P.ProductID
+
+
+  LEFT OUTER JOIN
+  dbo.DimChannel as C
+  on H.ChannelID=C.ChannelID
+
+  LEFT OUTER JOIN
+  dbo.DimStore as T
+  on H.StoreID=T.StoreID
+
+  LEFT OUTER JOIN
+  dbo.DimCustomer as M
+  on H.CustomerID=M.CustomerID
+
+  LEFT OUTER JOIN
+  dbo.DimReseller as R
+  on H.ResellerID=R.ResellerID
+  
+
+)
+as S
+
+ON (T.SalesDetailID=S.SalesDetailID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (SalesDetailID,DateKey,ProductKey,ChannelKey,StoreKey ,CustomerKey,ResellerKey,Cost,Price,SalesQuantity,SalesAmount,Profit)
+	VALUES (S.SalesDetailID,S.DateKey,S.ProductKey,S.ChannelKey,S.StoreKey ,S.CustomerKey,S.ResellerKey,S.Cost,S.Price,S.SalesQuantity,S.SalesAmount,S.Profit)
+
+WHEN MATCHED THEN 
+	UPDATE SET T.Cost=S.Cost,T.Price=S.Price, T.SalesQuantity=S.SalesQuantity, T.SalesAmount=S.SalesAmount, T.Profit=S.Profit
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;

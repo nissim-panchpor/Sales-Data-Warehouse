@@ -1,0 +1,41 @@
+MERGE [nissimDW].[dbo].[TargetSalesAmountFact] as T
+USING 
+( 
+SELECT
+D.DimDateID,
+ISNULL(C.Channelkey, -1) as ChannelKey,
+--CT.TargetName,
+CASE WHEN CT.TargetName LIKE 'Store Number%' THEN S.StoreKey ELSE -1 END as StoreKey,
+--CASE WHEN CT.TargetName LIKE 'Customer%' THEN -1 END as CustomerKey,
+CASE WHEN CT.TargetName NOT LIKE 'Store Number%' AND CT.TargetName NOT LIKE 'Customer%' THEN R.ResellerKey ELSE -1 END as ResellerKey,
+ROUND(CAST(CT.TargetSalesAmount as FLOAT)/365.0,2) as TargetSalesAmount
+FROM nissimDW.dbo.ChannelTarget as CT
+LEFT OUTER JOIN
+nissimDW.dbo.DimDate as D
+on (CT.Year = D.CalendarYear)
+
+LEFT OUTER JOIN
+nissimDW.dbo.DimChannel as C
+on (CASE WHEN CT.ChannelName='Online' THEN 'On-line' ELSE CT.ChannelName END = C.Channel)
+
+LEFT OUTER JOIN
+nissimDW.dbo.DimStore as S
+on(CASE WHEN Targetname LIKE 'Store%' THEN CAST(right(targetname,2) as int) END = S.StoreNumber)
+
+LEFT OUTER JOIN
+nissimDW.dbo.DimReseller as R
+on(CASE WHEN Targetname LIKE 'Mississi%Distributors' THEN 'Mississipi Distributors' ELSE TargetName END = R.ResellerName)
+)
+as S
+
+ON (T.Channelkey=S.Channelkey AND T.StoreKey=S.StoreKey AND T.ResellerKey=S.ResellerKey AND T.Datekey=S.DimDateID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (DateKey,ChannelKey,StoreKey,ResellerKey,TargetSalesAmount)
+	VALUES (S.DimDateID,S.ChannelKey,S.StoreKey,S.ResellerKey,S.TargetSalesAmount)
+
+WHEN MATCHED THEN 
+	UPDATE SET T.TargetSalesAmount=S.TargetSalesAmount
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;

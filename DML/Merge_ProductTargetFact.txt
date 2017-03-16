@@ -1,0 +1,28 @@
+MERGE [nissimDW].[dbo].[ProductTargetFact] as T
+USING 
+( 
+SELECT ISNULL(P.ProductKey, -1) as ProductKey
+	  ,PT.ProductID
+      ,D.DimDateID
+      ,ROUND(CAST(SalesQuantityTarget as FLOAT)/365.0,2) as SalesQuantityTarget
+FROM nissimDW.dbo.ProductTarget as PT
+LEFT OUTER JOIN
+nissimDW.dbo.DimProduct as P
+on (PT.ProductID=P.ProductID)
+LEFT OUTER JOIN
+nissimDW.dbo.DimDate as D
+on (PT.Year= D.CalendarYear)
+)
+as S
+
+ON (T.ProductID=S.ProductID AND T.Datekey=S.DimDateID)
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (ProductKey,ProductID,DateKey,SalesQuantityTarget)
+	VALUES (S.ProductKey,S.ProductID,S.DimDateID,S.SalesQuantityTarget)
+
+WHEN MATCHED THEN 
+	UPDATE SET T.ProductKey=S.ProductKey, T.ProductID=S.ProductID, T.DateKey=S.DimDateID, T.SalesQuantityTarget=S.SalesQuantityTarget
+
+WHEN NOT MATCHED BY SOURCE
+    THEN DELETE;
