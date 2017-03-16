@@ -1,0 +1,22 @@
+USE [nissimDW]
+GO
+/****** Object:  Table [dbo].[SalesFact]    Script Date: 3/13/2017 1:11:56 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SalesFact](
+	[SalesKey] [int] IDENTITY(1,1) NOT NULL,
+	[SalesDetailID] [int] NOT NULL,
+	[DateKey] [int] NULL,
+	[ProductKey] [int] NULL,
+	[ChannelKey] [int] NULL,
+	[StoreKey] [int] NULL,
+	[CustomerKey] [int] NULL,
+	[ResellerKey] [int] NULL,
+	[Cost] [numeric](18, 2) NULL,
+	[Price] [numeric](18, 2) NULL,
+	[SalesQuantity] [int] NULL,
+	[SalesAmount] [numeric](18, 2) NULL,
+	[Profit] [numeric](18, 2) NULL
+) ON [PRIMARY]

@@ -1,0 +1,19 @@
+USE [nissimDW]
+GO
+/****** Object:  Table [dbo].[SalesHeader]    Script Date: 3/13/2017 1:11:56 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SalesHeader](
+	[SalesHeaderID] [int] NULL,
+	[Date] [date] NULL,
+	[ChannelID] [int] NULL,
+	[StoreID] [int] NULL,
+	[CustomerID] [uniqueidentifier] NULL,
+	[ResellerID] [uniqueidentifier] NULL,
+	[CreatedDate] [datetime] NULL,
+	[CreatedBy] [nvarchar](255) NULL,
+	[ModifiedDate] [datetime] NULL,
+	[ModifiedBy] [nvarchar](255) NULL
+) ON [PRIMARY]
