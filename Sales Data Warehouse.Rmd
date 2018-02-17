@@ -833,7 +833,9 @@ Note: Insertion into SalesFact staging table was not included here because there
 
 	USE [nissimDW]
 	GO
+	
 	/****** Object:  View [dbo].[vProfitbyStoreResCust]    Script Date: 3/13/2017 1:11:56 PM ******/
+	
 		SET ANSI_NULLS ON
 		GO
 		SET QUOTED_IDENTIFIER ON
