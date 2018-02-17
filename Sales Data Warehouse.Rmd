@@ -1,0 +1,913 @@
+---
+title: "Sale Data Warehouse"
+author: "Nissim Panchpor"
+date: "March 10, 2017"
+output: 
+  html_document:
+    smart: false
+---
+
+
+### In this project, I built a data warehouse from scratch, followed by Tableau visualizations to draw insights from the data.
+
+### Steps:
+	1) First, I gathered data and performed a preliminary analysis of the data.
+	2) Then, I created a dimensional model according to the data and business requirements.
+	3) I created staging tables and inserted data in it.
+	4) I created dimension and fact tables. Inserted data into them using Merge queries.
+	5) I created views to aggregate the data, for easier analysis and visualization.
+	6) I explored the data in Tableau. Created visualizations to gather insights for measures by slicing and dicing with the dimensions.
+
+
+```{r, out.width= "80%"}
+library(knitr)
+include_graphics("Dimensional_Model.jpg")
+```
+
+
+
+## Create staging tables and insert data into them
+Note: Insertion into SalesFact staging table was not included here because there were more than 10k inserts.
+
+### Create Store staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[Store]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[Store](
+		[StoreID] [int] NULL,
+		[SubSegmentID] [int] NULL,
+		[StoreNumber] [int] NULL,
+		[StoreManager] [nvarchar](255) NULL,
+		[Address] [nvarchar](255) NULL,
+		[City] [nvarchar](255) NULL,
+		[StateProvince] [nvarchar](255) NULL,
+		[Country] [nvarchar](255) NULL,
+		[PostalCode] [nvarchar](255) NULL,
+		[PhoneNumber] [nvarchar](20) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (1, 1, 5, N'Freida Williams', N'90021 State Street', N'Atlanta', N'Georgia', N'United States', N'30301', N'404-902-1067', CAST(N'2013-01-01T21:23:03.080' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (2, 2, 34, N'Michelle Miller', N'16371 14th Street', N'St Louis', N'Missouri', N'United States', N'63103', N'557-704-9940', CAST(N'2013-01-01T21:23:03.080' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (3, 2, 39, N'Keith Chum', N'16205 138th Street', N'Jackson', N'Mississippi', N'United States', N'39201', N'601-250-4658', CAST(N'2013-01-01T21:23:03.080' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (4, 3, 21, N'Mark Weber', N'8365 10th Avenue', N'Bentonville', N'Arkansas', N'United States', N'72716', N'479-950-6646', CAST(N'2013-01-01T21:23:03.080' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (5, 4, 8, N'James Trunk', N'437 Main Avenue', N'Little Rock', N'Arkansas', N'United States', N'72202', N'501-168-3940', CAST(N'2013-01-01T21:23:03.080' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (6, 6, 10, N'Joann Chan', N'1037 2nd Street', N'Jefferson City', N'Missouri', N'United States', N'65103', N'573-398-3046', CAST(N'2013-01-01T21:23:03.080' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+
+### Create ProductType staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[ProductType]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[ProductType](
+		[ProductTypeID] [int] NULL,
+		[ProductCategoryID] [int] NULL,
+		[ProductType] [nvarchar](50) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (1, 1, N'Cosmetics', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (2, 1, N'Jewelry', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (3, 2, N'Baby 0-2', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (4, 2, N'Kids 2-6', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (5, 2, N'Kids 7-14', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (6, 3, N'Women''s Casual', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (7, 3, N'Women''s Eveningwear', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (8, 3, N'Women''s Formal', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (9, 4, N'Men''s Casual', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (10, 4, N'Men''s Formal', CAST(N'2013-01-01T20:55:46.600' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+
+
+### Create ProductCategory staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[ProductCategory]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[ProductCategory](
+		[ProductCategoryID] [int] NULL,
+		[ProductCategory] [nvarchar](50) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[ProductCategory] ([ProductCategoryID], [ProductCategory], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (1, N'Accessories', CAST(N'2013-01-01T20:55:20.027' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductCategory] ([ProductCategoryID], [ProductCategory], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (2, N'Children''s Apparel', CAST(N'2013-01-01T20:55:20.027' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductCategory] ([ProductCategoryID], [ProductCategory], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (3, N'Women''s Apparel', CAST(N'2013-01-01T20:55:20.027' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[ProductCategory] ([ProductCategoryID], [ProductCategory], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (4, N'Men''s Apparel', CAST(N'2013-01-01T20:55:20.027' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+
+
+### Create Product staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[Product]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+
+	CREATE TABLE [dbo].[Product](
+		[ProductID] [int] NULL,
+		[ProductTypeID] [int] NULL,
+		[Product] [nvarchar](50) NULL,
+		[Color] [nvarchar](50) NULL,
+		[Style] [nvarchar](50) NULL,
+		[UnitofMeasureID] [int] NULL,
+		[Weight] [numeric](18, 4) NULL,
+		[Price] [numeric](18, 2) NULL,
+		[Cost] [numeric](18, 2) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL,
+		[WholesalePrice] [numeric](18, 2) NULL
+	) ON [PRIMARY]
+
+	GO
+
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (1, 1, N'Blush', N'Red', NULL, 3, CAST(8.0000 AS Numeric(18, 4)), CAST(13.95 AS Numeric(18, 2)), CAST(5.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(7.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (2, 1, N'Lipstick', N'Red', NULL, 3, CAST(3.4000 AS Numeric(18, 4)), CAST(6.99 AS Numeric(18, 2)), CAST(2.50 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(3.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (3, 2, N'Amytheyst Necklace', N'purple', NULL, 3, CAST(12.0000 AS Numeric(18, 4)), CAST(24.95 AS Numeric(18, 2)), CAST(5.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(12.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (4, 2, N'Silver Ring, Gallic pattern', NULL, N'gallic', 3, CAST(2.0000 AS Numeric(18, 4)), CAST(43.95 AS Numeric(18, 2)), CAST(13.75 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(22.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (5, 2, N'Silver Ring, plain', NULL, N'plain', 3, CAST(2.0000 AS Numeric(18, 4)), CAST(35.50 AS Numeric(18, 2)), CAST(10.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(17.75 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (6, 3, N'Blue Onesie Pajamas', N'Blue', N'Onesie', 1, CAST(0.4300 AS Numeric(18, 4)), CAST(5.99 AS Numeric(18, 2)), CAST(2.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(3.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (7, 3, N'Thomas the Train Pajamas', N'Blue', N'Onesie', 1, CAST(0.5300 AS Numeric(18, 4)), CAST(6.99 AS Numeric(18, 2)), CAST(2.50 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(3.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (8, 3, N'White Socks, 6 pack', N'White', N'Socks', 1, CAST(0.2500 AS Numeric(18, 4)), CAST(4.99 AS Numeric(18, 2)), CAST(1.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(2.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (9, 4, N'Girl''s Dress', N'Red', N'Dress', 1, CAST(0.5000 AS Numeric(18, 4)), CAST(7.99 AS Numeric(18, 2)), CAST(3.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(4.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (10, 4, N'Thomas the Train Pajamas', N'Blue', N'Two Piece', 1, CAST(0.6000 AS Numeric(18, 4)), CAST(7.99 AS Numeric(18, 2)), CAST(3.50 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(4.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (11, 5, N'Girl''s Dress', N'Pink', N'Dress', 1, CAST(0.7000 AS Numeric(18, 4)), CAST(13.95 AS Numeric(18, 2)), CAST(4.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(7.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (12, 5, N'Spider-man T-shirt', N'Red', N'T-Shirt', 1, CAST(0.4000 AS Numeric(18, 4)), CAST(6.99 AS Numeric(18, 2)), CAST(3.50 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(4.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (13, 6, N'Blouse', N'White', N'Blouse', 1, CAST(0.5300 AS Numeric(18, 4)), CAST(69.99 AS Numeric(18, 2)), CAST(25.75 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(35.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (14, 6, N'Skirt', N'Red', N'Skirt', 1, CAST(0.6000 AS Numeric(18, 4)), CAST(58.99 AS Numeric(18, 2)), CAST(21.25 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(29.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (15, 7, N'Dressing Gown', N'White', N'Gown', 1, CAST(0.9000 AS Numeric(18, 4)), CAST(59.99 AS Numeric(18, 2)), CAST(20.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(30.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (16, 7, N'Pajamas', N'Black', N'Pajamas', 1, CAST(1.0000 AS Numeric(18, 4)), CAST(47.99 AS Numeric(18, 2)), CAST(10.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(24.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (17, 8, N'Dress', N'Black', N'Dress', 1, CAST(1.0000 AS Numeric(18, 4)), CAST(109.99 AS Numeric(18, 2)), CAST(35.50 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(55.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (18, 8, N'Shoes, High-heel', N'Black', N'Shoes', 1, CAST(0.5000 AS Numeric(18, 4)), CAST(57.99 AS Numeric(18, 2)), CAST(20.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(29.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (19, 8, N'Strapless Dress', N'Blue', N'Dress', 1, CAST(0.9000 AS Numeric(18, 4)), CAST(117.99 AS Numeric(18, 2)), CAST(39.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(60.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (20, 9, N'Captain America T-Shirt', N'White', N'T-Shirt', 2, CAST(1.0000 AS Numeric(18, 4)), CAST(19.95 AS Numeric(18, 2)), CAST(6.75 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(10.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (21, 9, N'Denim Jeans', N'Blue', N'Pants', 2, CAST(2.0000 AS Numeric(18, 4)), CAST(47.50 AS Numeric(18, 2)), CAST(25.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(32.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (22, 9, N'T-Shirt', N'White', N'T-Shirt', 2, CAST(0.7500 AS Numeric(18, 4)), CAST(6.99 AS Numeric(18, 2)), CAST(2.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(3.50 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (23, 10, N'Buttondown Shirt', N'White', N'Shirt', 1, CAST(0.7000 AS Numeric(18, 4)), CAST(39.95 AS Numeric(18, 2)), CAST(15.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(20.00 AS Numeric(18, 2)))
+	INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style], [UnitofMeasureID], [Weight], [Price], [Cost], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [WholesalePrice]) VALUES (24, 10, N'Formal Pants', N'Khaki', N'Pants', 1, CAST(0.8000 AS Numeric(18, 4)), CAST(49.99 AS Numeric(18, 2)), CAST(20.00 AS Numeric(18, 2)), CAST(N'2013-01-01T20:56:10.077' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, CAST(25.00 AS Numeric(18, 2)))
+
+
+### Create Reseller staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[Reseller]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[Reseller](
+		[ResellerID] [uniqueidentifier] NULL,
+		[Contact] [nvarchar](255) NULL,
+		[EmailAddress] [nvarchar](255) NULL,
+		[Address] [nvarchar](255) NULL,
+		[City] [nvarchar](255) NULL,
+		[StateProvince] [nvarchar](255) NULL,
+		[Country] [nvarchar](255) NULL,
+		[PostalCode] [nvarchar](255) NULL,
+		[PhoneNumber] [nvarchar](20) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL,
+		[ResellerName] [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[Reseller] ([ResellerID], [Contact], [EmailAddress], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [ResellerName]) VALUES (N'd56ef891-cbfa-4659-a44a-169aafb00587', N'Charles Kim', N'charles.kim@email.com', N'10437 Retailer Avenue', N'Jackson', N'Mississippi', N'United States', N'39203', N'601-425-0639', CAST(N'2013-01-01T20:43:18.127' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, N'Mississipi Distributors')
+	INSERT [dbo].[Reseller] ([ResellerID], [Contact], [EmailAddress], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [ResellerName]) VALUES (N'10418299-2934-4ca3-b368-d0dfcde58a51', N'Chelsea Douglas', N'chelsea.douglas@email.com', N'100 Big Retailer Court', N'Indianapolis', N'Indiana', N'United States', N'46204', N'317-969-8119', CAST(N'2013-01-01T20:43:18.127' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL, N'Indiana Department Store')
+
+
+### Create Customer staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[Customer]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[Customer](
+		[CustomerID] [uniqueidentifier] NULL,
+		[SubSegmentID] [int] NULL,
+		[FirstName] [nvarchar](255) NULL,
+		[LastName] [nvarchar](255) NULL,
+		[Gender] [nvarchar](1) NULL,
+		[EmailAddress] [nvarchar](255) NULL,
+		[Address] [nvarchar](255) NULL,
+		[City] [nvarchar](255) NULL,
+		[StateProvince] [nvarchar](255) NULL,
+		[Country] [nvarchar](255) NULL,
+		[PostalCode] [nvarchar](255) NULL,
+		[PhoneNumber] [nvarchar](20) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[Customer] ([CustomerID], [SubSegmentID], [FirstName], [LastName], [Gender], [EmailAddress], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (N'9cfbece1-de7a-4ef5-a766-43f28e7edfa2', 5, N'Kim', N'Wanda', N'F', N'wanda.kim@email.com', N'886 East Way', N'Birmingham', N'Alabama', N'United States', N'35203', N'205-742-4100', CAST(N'2013-01-01T21:20:22.207' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Customer] ([CustomerID], [SubSegmentID], [FirstName], [LastName], [Gender], [EmailAddress], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (N'5bd2fd76-c656-4a12-80b1-7a423e380fca', 5, N'Leonard', N'Alvarado', N'M', N'leonard.alvardo@email.com', N'201 South Street', N'Atlanta', N'Georgia', N'United States', N'30304', N'404-215-3949', CAST(N'2013-01-01T21:20:22.207' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Customer] ([CustomerID], [SubSegmentID], [FirstName], [LastName], [Gender], [EmailAddress], [Address], [City], [StateProvince], [Country], [PostalCode], [PhoneNumber], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (N'7ab04e33-c078-462b-a40d-b93e2bc0466b', 5, N'Young', N'Roger', N'M', N'roger.young@email.com', N'102 North Court', N'Tiffin', N'Ohio', N'United States', N'44883', N'419-695-5262', CAST(N'2013-01-01T21:20:22.207' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+
+
+### Create Channel staging table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[Channel]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[Channel](
+		[ChannelID] [int] NULL,
+		[ChannelCategoryID] [int] NULL,
+		[Channel] [nvarchar](50) NULL,
+		[CreatedDate] [datetime] NULL,
+		[CreatedBy] [nvarchar](255) NULL,
+		[ModifiedDate] [datetime] NULL,
+		[ModifiedBy] [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[Channel] ([ChannelID], [ChannelCategoryID], [Channel], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (1, 1, N'Boutiques', CAST(N'2013-01-01T20:54:57.147' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Channel] ([ChannelID], [ChannelCategoryID], [Channel], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (2, 1, N'On-line', CAST(N'2013-01-01T20:54:57.147' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Channel] ([ChannelID], [ChannelCategoryID], [Channel], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (3, 1, N'Outlet', CAST(N'2013-01-01T20:54:57.147' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Channel] ([ChannelID], [ChannelCategoryID], [Channel], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (4, 2, N'Branded Franchise', CAST(N'2013-01-01T20:54:57.147' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+	INSERT [dbo].[Channel] ([ChannelID], [ChannelCategoryID], [Channel], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy]) VALUES (5, 2, N'Department Stores', CAST(N'2013-01-01T20:54:57.147' AS DateTime), N'company\SQLServerSalesAccount', NULL, NULL)
+
+
+### Create ProductTarget table and insert data
+
+	USE [nissimDW]
+	GO
+	/****** Object:  Table [dbo].[ProductTarget]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	CREATE TABLE [dbo].[ProductTarget](
+		[ProductID] [varchar](50) NULL,
+		[Product] [varchar](50) NULL,
+		[Year] [varchar](50) NULL,
+		[SalesQuantityTarget] [varchar](50) NULL
+	) ON [PRIMARY]
+
+	GO
+	
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'3', N'Amytheyst Necklace', N'2013', N'1345998')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'3', N'Amytheyst Necklace', N'2014', N'929735')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'13', N'Blouse', N'2013', N'2140009')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'13', N'Blouse', N'2014', N'2292109')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'6', N'Blue Onesie Pajamas', N'2013', N'630376')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'6', N'Blue Onesie Pajamas', N'2014', N'494910')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'1', N'Blush', N'2013', N'2532264')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'1', N'Blush', N'2014', N'1957878')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'23', N'Buttondown Shirt', N'2013', N'3432552')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'23', N'Buttondown Shirt', N'2014', N'3264338')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'20', N'Captain America T-Shirt', N'2013', N'1426500')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'20', N'Captain America T-Shirt', N'2014', N'1372784')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'21', N'Denim Jeans', N'2013', N'1301933')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'21', N'Denim Jeans', N'2014', N'1267800')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'17', N'Dress', N'2013', N'3222130')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'17', N'Dress', N'2014', N'2840801')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'15', N'Dressing Gown', N'2013', N'2142948')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'15', N'Dressing Gown', N'2014', N'1420416')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'24', N'Formal Pants', N'2013', N'3435991')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'24', N'Formal Pants', N'2014', N'4570832')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'9', N'Girl''s Dress', N'2013', N'1009269')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'9', N'Girl''s Dress', N'2014', N'1192765')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'11', N'Girl''s Dress', N'2013', N'1825049')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'11', N'Girl''s Dress', N'2014', N'1850884')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'2', N'Lipstick', N'2013', N'2336990')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'2', N'Lipstick', N'2014', N'1794986')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'16', N'Pajamas', N'2013', N'1426502')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'16', N'Pajamas', N'2014', N'1905608')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'18', N'Shoes, High-heel', N'2013', N'3137918')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'18', N'Shoes, High-heel', N'2014', N'3318460')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'4', N'Silver Ring, Gallic pattern', N'2013', N'1244215')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'4', N'Silver Ring, Gallic pattern', N'2014', N'1294765')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'5', N'Silver Ring, plain', N'2013', N'1505986')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'5', N'Silver Ring, plain', N'2014', N'1236458')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'14', N'Skirt', N'2013', N'2399493')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'14', N'Skirt', N'2014', N'2228866')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'12', N'Spider-man T-shirt', N'2013', N'2005452')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'12', N'Spider-man T-shirt', N'2014', N'1658310')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'19', N'Strapless Dress', N'2013', N'2830065')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'19', N'Strapless Dress', N'2014', N'2542153')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'7', N'Thomas the Train Pajamas', N'2013', N'460315')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'7', N'Thomas the Train Pajamas', N'2014', N'399675')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'10', N'Thomas the Train Pajamas', N'2013', N'1123892')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'10', N'Thomas the Train Pajamas', N'2014', N'1076924')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'22', N'T-Shirt', N'2013', N'1552260')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'22', N'T-Shirt', N'2014', N'1365803')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'8', N'White Socks, 6 pack', N'2013', N'575989')
+	INSERT [dbo].[ProductTarget] ([ProductID], [Product], [Year], [SalesQuantityTarget]) VALUES (N'8', N'White Socks, 6 pack', N'2014', N'546959')
+
+
+## Insert data into dimension tables using the staging tables created above
+
+### Inset into Channel dimension table using Channel staging table
+
+	MERGE [nissimDW].[dbo].[DimChannel] as T
+	USING 
+	
+	(
+	
+		SELECT C.ChannelID,C.ChannelCategoryID,C.Channel,CC.ChannelCategory 
+		
+		from [nissimDW].[dbo].[Channel] C 
+		
+		inner join [nissimDW].[dbo].[ChannelCategory] CC
+			on C.ChannelCategoryID=CC.ChannelCategoryID
+	
+	) as S
+
+	ON (T.ChannelID=S.ChannelID AND T.ChannelCategoryID=S.ChannelCategoryID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (ChannelID,ChannelCategoryID,Channel,ChannelCategory)
+		VALUES (S.ChannelID,S.ChannelCategoryID,S.Channel,S.ChannelCategory)
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.Channel=S.Channel
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+		
+		
+	SET IDENTITY_INSERT dbo.DimChannel ON;
+
+	INSERT INTO [dbo].[DimChannel]
+			   ([ChannelKey]
+			   ,[ChannelID]
+			   ,[ChannelCategoryID]
+			   ,[Channel]
+			   ,[ChannelCategory])
+		 VALUES
+			   (-1
+			   ,-1
+			   ,-1
+			   ,'UNKNOWN'
+			   ,'UNKNOWN');
+
+
+
+	  SET IDENTITY_INSERT dbo.DimChannel OFF;
+  
+### Inset into Location dimension table using Customer, Store and Reseller staging tables
+
+	MERGE [nissimDW].[dbo].[DimLocation] as T
+	USING 
+	(
+	
+		SELECT [Address] ,[City],[StateProvince],[Country],[PostalCode]
+		FROM [nissimDW].[dbo].[Reseller]
+		
+		Union
+		
+		SELECT [Address],[City],[StateProvince],[Country],[PostalCode]
+		FROM [nissimDW].[dbo].[Customer]
+		
+		Union
+		
+		SELECT [Address],[City] ,[StateProvince],[Country] ,[PostalCode]
+		FROM [nissimDW].[dbo].[Store]
+	
+	) as S
+
+	ON (T.Address=S.Address AND T.City=S.City AND T.StateProvince=S.StateProvince AND T.Country=S.Country AND T.PostalCode=S.PostalCode)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (Address,City ,StateProvince,Country ,PostalCode)
+		VALUES (S.Address,S.City ,S.StateProvince,S.Country ,S.PostalCode )
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.Address=S.Address , T.City=S.City , T.StateProvince=S.StateProvince , 
+		T.Country=S.Country ,T.PostalCode=S.PostalCode
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+		
+		
+	IF NOT EXISTS (SELECT * FROM dbo.DimLocation WHERE LocationKey = '-1')
+
+	BEGIN
+	   SET IDENTITY_INSERT dbo.DimLocation ON;
+
+	INSERT INTO dbo.DimLocation
+	( LocationKey
+	  ,Address
+	  ,City
+	  ,StateProvince
+	  ,Country
+	  ,PostalCode
+	  )
+	  VALUES
+	  (
+	  -1
+	  ,'UNKNOWN'
+	  ,'UNKNOWN'
+	  ,'UNKNOWN'
+	  ,'UNKNOWN'
+	  ,'UNKNOWN'
+	  );
+
+	  SET IDENTITY_INSERT dbo.DimLocation OFF
+	  
+	END
+
+
+### Inset into Product dimension table using ProductType and ProductCategory staging tables
+
+	MERGE [nissimDW].[dbo].[DimProduct] as T
+	USING 
+	(
+	
+		SELECT P.ProductID,P.ProductTypeID,PT.ProductCategoryID,P.Product,PT.ProductType,PC.ProductCategory,P.Color,P.Style,P.Weight,P.Cost,P.WholesalePrice,P.Price 
+		
+		FROM Product P 
+		
+		inner join ProductType PT
+			on P.ProductTypeID=PT.ProductTypeID
+		
+		inner join ProductCategory PC
+			on PT.ProductCategoryID=PC.ProductCategoryID
+	
+	) as S
+
+	ON (T.ProductID=S.ProductID AND T.ProductTypeID=S.ProductTypeID AND T.ProductCategoryID=S.ProductCategoryID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (ProductID,ProductTypeID,ProductCategoryID,Product,ProductType,ProductCategory,Color,Style,Weight,Cost,WholesalePrice,Price)
+		VALUES (S.ProductID,S.ProductTypeID,S.ProductCategoryID,S.Product,S.ProductType,S.ProductCategory,S.Color,S.Style,S.Weight,S.Cost,S.WholesalePrice,S.Price )
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.Product=S.Product,T.ProductType=S.ProductType, T.ProductCategory=S.ProductCategory,T.COst=S.Cost,T.WholesalePrice=S.WholesalePrice,T.Price=S.Price
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+		
+		
+		
+	SET IDENTITY_INSERT dbo.DimProduct ON;
+
+	  INSERT INTO [dbo].[DimProduct]
+			   ([ProductKey]
+			   ,[ProductID]
+			   ,[ProductTypeID]
+			   ,[ProductCategoryID]
+			   ,[Product]
+			   ,[ProductType]
+			   ,[ProductCategory]
+			   ,[Color]
+			   ,[Style]
+			   ,[Weight]
+			   ,[Cost]
+			   ,[WholesalePrice]
+			   ,[Price])
+			   
+		 VALUES
+			   (-1
+			   ,-1
+			   ,-1
+			   ,-1
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,-1
+			   ,-1
+			   ,-1
+			   ,-1);
+
+	SET IDENTITY_INSERT dbo.DimProduct OFF;
+  
+### Inset into Reseller dimension table using Reseller staging table
+
+	MERGE [nissimDW].[dbo].[DimReseller] as T
+	USING 
+	(
+	
+		SELECT R.ResellerID, R.Contact, R.EmailAddress, R.PhoneNumber, R.ResellerName, L.LocationKey 
+		
+		FROM dbo.Reseller R inner join dbo.DimLocation L
+		
+		on (R.Address=L.Address AND R.City=L.City AND R.StateProvince=L.StateProvince
+		AND R.Country=L.Country AND R.PostalCode=L.PostalCode) 
+	
+	) as S
+
+	ON (T.ResellerID=S.ResellerID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (ResellerID, Contact, EmailAddress, PhoneNumber, ResellerName, LocationKey)
+		VALUES (S.ResellerID, S.Contact, S.EmailAddress, S.PhoneNumber, S.ResellerName, S.LocationKey)
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.Contact=S.Contact, T.EmailAddress=S.EmailAddress, T.PhoneNumber=S.PhoneNumber, T.LocationKey=S.LocationKey
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+		
+		
+	SET IDENTITY_INSERT dbo.DimReseller ON;
+
+	INSERT INTO [dbo].[DimReseller]
+			   ([ResellerKey]
+			   ,[ResellerID]
+			   ,[ResellerName]
+			   ,[Contact]
+			   ,[EmailAddress]
+			   ,[PhoneNumber]
+			   ,[LocationKey])
+			   
+		 VALUES
+			   (-1
+			   ,-1
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,-1);
+
+	SET IDENTITY_INSERT dbo.DimReseller OFF;
+  
+### Inset into Store dimension table using Store staging table
+	MERGE [nissimDW].[dbo].[DimStore] as T
+	USING 
+	(
+	
+		SELECT A.StoreID , A.StoreNumber , A.StoreManager, A.PhoneNumber, L.LocationKey
+		
+		FROM dbo.Store A inner join dbo.DimLocation L
+		
+			on (A.Address=L.Address AND A.City=L.City AND A.StateProvince=L.StateProvince
+		AND A.Country=L.Country AND A.PostalCode=L.PostalCode) 
+	
+	) as S
+
+	ON (T.StoreID=S.StoreID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (StoreID , StoreNumber, StoreManager, PhoneNumber, LocationKey )
+		VALUES (S.StoreID , S.StoreNumber, S.StoreManager, S.PhoneNumber, S.LocationKey)
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.StoreNumber=S.StoreNumber, T.StoreManager=S.StoreManager, T.PhoneNumber=S.PhoneNumber, T.LocationKey=S.LocationKey
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+		
+		
+	SET IDENTITY_INSERT dbo.DimStore ON;
+
+	INSERT INTO [dbo].[DimStore]
+	
+	(
+		StoreKey
+		,StoreID 
+		,StoreNumber 
+		,StoreManager
+		,PhoneNumber 
+		,LocationKey )
+		 VALUES
+			   (-1
+				,-1
+			   ,-1
+			   ,'UNKNOWN'
+			   ,'UNKNOWN'
+			   ,-1);
+
+	 SET IDENTITY_INSERT dbo.DimStore OFF;
+ 
+### Inset into ProductTargetFact fact table using ProductTargetFact staging table
+
+	MERGE [nissimDW].[dbo].[ProductTargetFact] as T
+	USING 
+	( 
+		SELECT ISNULL(P.ProductKey, -1) as ProductKey
+		
+			  ,PT.ProductID
+			  ,D.DimDateID
+			  
+			  ,ROUND(CAST(SalesQuantityTarget as FLOAT)/365.0,2) as SalesQuantityTarget
+			  
+		FROM nissimDW.dbo.ProductTarget as PT
+		
+		LEFT OUTER JOIN nissimDW.dbo.DimProduct as P
+			on (PT.ProductID=P.ProductID)
+		LEFT OUTER JOIN nissimDW.dbo.DimDate as D
+			on (PT.Year= D.CalendarYear)
+	)
+	as S
+
+	ON (T.ProductID=S.ProductID AND T.Datekey=S.DimDateID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (ProductKey,ProductID,DateKey,SalesQuantityTarget)
+		VALUES (S.ProductKey,S.ProductID,S.DimDateID,S.SalesQuantityTarget)
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.ProductKey=S.ProductKey, T.ProductID=S.ProductID, T.DateKey=S.DimDateID, T.SalesQuantityTarget=S.SalesQuantityTarget
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+    
+### Inset into SalesFact fact table using SalesFact staging table
+
+	MERGE [nissimDW].[dbo].[SalesFact] as T
+	USING 
+	( 
+
+		SELECT S.SalesDetailID
+		--,S.SalesHeaderID
+		,ISNULL(D.DimDateID, -1) as DateKey
+		,ISNULL(P.ProductKey, -1) as ProductKey
+		,ISNULL(C.ChannelKey, -1) as ChannelKey
+		,ISNULL(T.StoreKey, -1) as StoreKey
+		,ISNULL(M.CustomerKey, -1) as CustomerKey
+		,ISNULL(R.ResellerKey, -1) as ResellerKey
+		,P.Cost as Cost
+		,CASE WHEN H.ResellerID IS NOT NULL then P.WholeSalePrice ELSE P.Price END as Price
+		,S.SalesQuantity
+		,S.SalesAmount
+		,S.SalesAmount-(P.Cost * S.SalesQuantity) as Profit
+				
+		  FROM dbo.SalesDetail as S
+		  
+		  INNER JOIN dbo.SalesHeader as H
+			on S.SalesHeaderID=H.SalesHeaderID
+
+		  LEFT OUTER JOIN dbo.DimDate as D
+			on H.Date=D.FullDate
+
+		  LEFT OUTER JOIN dbo.DimProduct as P
+			on S.ProductID=P.ProductID
+
+
+		  LEFT OUTER JOIN dbo.DimChannel as C
+			on H.ChannelID=C.ChannelID
+
+		  LEFT OUTER JOIN dbo.DimStore as T
+			on H.StoreID=T.StoreID
+
+		  LEFT OUTER JOIN dbo.DimCustomer as M
+			on H.CustomerID=M.CustomerID
+
+		  LEFT OUTER JOIN dbo.DimReseller as R
+			on H.ResellerID=R.ResellerID
+	  
+	)
+	as S
+
+	ON (T.SalesDetailID=S.SalesDetailID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+	
+		INSERT (SalesDetailID,DateKey,ProductKey,ChannelKey,StoreKey ,CustomerKey,ResellerKey,Cost,Price,SalesQuantity,SalesAmount,Profit)
+		
+		VALUES (S.SalesDetailID,S.DateKey,S.ProductKey,S.ChannelKey,S.StoreKey ,S.CustomerKey,S.ResellerKey,S.Cost,S.Price,S.SalesQuantity,S.SalesAmount,S.Profit)
+
+	WHEN MATCHED THEN 
+	
+		UPDATE SET T.Cost=S.Cost,T.Price=S.Price, T.SalesQuantity=S.SalesQuantity, T.SalesAmount=S.SalesAmount, T.Profit=S.Profit
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+    
+### Inset into TargetSalesAmountFact fact table using TargetSalesAmountFact staging table
+
+	MERGE [nissimDW].[dbo].[TargetSalesAmountFact] as T
+
+	USING 
+	( 
+		SELECT
+		D.DimDateID,
+		ISNULL(C.Channelkey, -1) as ChannelKey,
+		--CT.TargetName,
+		
+		CASE WHEN CT.TargetName LIKE 'Store Number%' THEN S.StoreKey ELSE -1 END as StoreKey,
+		--CASE WHEN CT.TargetName LIKE 'Customer%' THEN -1 END as CustomerKey,
+		
+		CASE WHEN CT.TargetName NOT LIKE 'Store Number%' AND CT.TargetName NOT LIKE 'Customer%' THEN R.ResellerKey ELSE -1 END as ResellerKey,
+		
+		ROUND(CAST(CT.TargetSalesAmount as FLOAT)/365.0,2) as TargetSalesAmount
+		
+		FROM nissimDW.dbo.ChannelTarget as CT
+		
+		LEFT OUTER JOIN
+		nissimDW.dbo.DimDate as D
+		
+			on (CT.Year = D.CalendarYear)
+
+		LEFT OUTER JOIN
+		nissimDW.dbo.DimChannel as C
+		
+			on (CASE WHEN CT.ChannelName='Online' THEN 'On-line' ELSE CT.ChannelName END = C.Channel)
+
+		LEFT OUTER JOIN
+		nissimDW.dbo.DimStore as S
+		
+			on(CASE WHEN Targetname LIKE 'Store%' THEN CAST(right(targetname,2) as int) END = S.StoreNumber)
+
+		LEFT OUTER JOIN
+		nissimDW.dbo.DimReseller as R
+		
+			on(CASE WHEN Targetname LIKE 'Mississi%Distributors' THEN 'Mississipi Distributors' ELSE TargetName END = R.ResellerName)
+	)
+	
+	as S
+
+	ON (T.Channelkey=S.Channelkey AND T.StoreKey=S.StoreKey AND T.ResellerKey=S.ResellerKey AND T.Datekey=S.DimDateID)
+
+	WHEN NOT MATCHED BY TARGET THEN
+
+		INSERT (DateKey,ChannelKey,StoreKey,ResellerKey,TargetSalesAmount)
+		VALUES (S.DimDateID,S.ChannelKey,S.StoreKey,S.ResellerKey,S.TargetSalesAmount)
+
+	WHEN MATCHED THEN 
+
+		UPDATE SET T.TargetSalesAmount=S.TargetSalesAmount
+
+	WHEN NOT MATCHED BY SOURCE
+		THEN DELETE;
+    
+    
+## Create view using to combine Sales and Target data using vTargetSalesAmountFact and vSalesFact views (both views same as fact tables)
+
+	USE [nissimDW]
+	GO
+	/****** Object:  View [dbo].[vChannelSalesTarget]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	CREATE VIEW [dbo].[vChannelSalesTarget] as
+
+		SELECT T.DateKey,T.ChannelKey, T.TargetSalesbyChannel, S.SalesAmountbyChannel, S.ProfitbyChannel
+		
+		FROM
+		(
+			SELECT Datekey, ChannelKey, sum(TargetSalesAmount) TargetSalesbyChannel
+			
+			FROM [nissimDW].[dbo].[vTargetSalesAmountFact]
+			
+			GROUP BY Datekey, ChannelKey
+			
+		) as T
+
+		LEFT OUTER JOIN
+		
+		(
+		SELECT Datekey, ChannelKey, SUM(SalesAmount) as SalesAmountbyChannel, SUM(PROFIT) as ProfitbyChannel
+		
+		FROM [nissimDW].[dbo].[vSalesFact]
+		
+		GROUP BY Datekey, ChannelKey
+		
+		) as S
+			
+			ON (T.Datekey=S.Datekey AND T.ChannelKey=S.ChannelKey)
+
+	--ORDER BY Datekey, ChannelKey
+	GO
+
+## Create view to see profit per each store, reseller and Customer
+
+USE [nissimDW]
+GO
+/****** Object:  View [dbo].[vProfitbyStoreResCust]    Script Date: 3/13/2017 1:11:56 PM ******/
+	SET ANSI_NULLS ON
+	GO
+	SET QUOTED_IDENTIFIER ON
+	GO
+	
+	
+	CREATE VIEW [dbo].[vProfitbyStoreResCust] as
+
+		  SELECT S.Datekey
+		  , S.ChannelKey
+		  , S.ProductKey
+		  , S.StoreKey
+		  , SL.StoreNumber
+		  , RL.ResellerName
+		  , CL.CustomerKey
+		  , CL.Gender
+		  
+		  ,CASE WHEN SL.Address = 'UNKNOWN' AND CL.Address= 'UNKNOWN' THEN RL.Address WHEN SL.Address = 'UNKNOWN' THEN CL.Address ELSE SL.Address END AS Address
+		  
+		  ,CASE WHEN SL.City = 'UNKNOWN' AND CL.City= 'UNKNOWN' THEN RL.City WHEN SL.City = 'UNKNOWN' THEN CL.City ELSE SL.City END AS City
+		  
+		  ,CASE WHEN SL.StateProvince = 'UNKNOWN' AND CL.StateProvince= 'UNKNOWN' THEN RL.StateProvince WHEN SL.StateProvince= 'UNKNOWN' THEN CL.StateProvince ELSE SL.StateProvince END AS StateProvince
+		  
+		  ,CASE WHEN SL.Country = 'UNKNOWN' AND CL.Country= 'UNKNOWN' THEN RL.Country WHEN SL.Country= 'UNKNOWN' THEN CL.Country ELSE SL.Country END AS Country
+		  
+		  ,CASE WHEN SL.PostalCode = 'UNKNOWN' AND CL.PostalCode= 'UNKNOWN' THEN RL.PostalCode WHEN SL.PostalCode= 'UNKNOWN' THEN CL.PostalCode ELSE SL.PostalCode END AS PostalCode
+		  
+		  ,S.Cost
+		  ,S.Price
+		  ,S.SalesQuantity
+		  ,S.SalesAmount
+		  ,S.Profit
+		  
+		  FROM [nissimDW].[dbo].[vSalesFact] as S
+		  
+		  LEFT OUTER JOIN
+		  (
+			  SELECT StoreKey,StoreNumber,S.LocationKey,Address,City,StateProvince,Country,PostalCode
+			  
+			  FROM [nissimDW].[dbo].[vDimStore] S
+			  
+			  LEFT OUTER JOIN
+			  [nissimDW].[dbo].[vDimLocation] L
+			  
+			  ON S.LocationKey=L.LocationKey
+			  
+		  ) SL
+		  ON S.StoreKey=SL.StoreKey
+		  
+		  LEFT OUTER JOIN
+		  (
+			  SELECT ResellerKey,ResellerName,Address,City,StateProvince,Country,PostalCode
+			  
+			  FROM [nissimDW].[dbo].[vDimReseller] R
+			  
+			  LEFT OUTER JOIN
+			  [nissimDW].[dbo].[vDimLocation] L
+			  
+			  ON R.LocationKey=L.LocationKey
+			  
+		  ) RL
+		  ON (S.ResellerKey=RL.ResellerKey)
+		  
+		  LEFT OUTER JOIN
+		  (
+			  SELECT CustomerKey,Gender,Address,City,StateProvince,Country,PostalCode
+			  
+			  FROM [nissimDW].[dbo].[vDimCustomer] C
+			  
+			  LEFT OUTER JOIN
+			  [nissimDW].[dbo].[vDimLocation] L
+			  
+			  ON C.LocationKey=L.LocationKey
+			  
+		  ) CL
+		  ON (S.CustomerKey=CL.CustomerKey)
+	GO

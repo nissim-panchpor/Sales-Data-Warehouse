@@ -1,3 +1,5 @@
+
+
 MERGE [nissimDW].[dbo].[DimChannel] as T
 USING (SELECT C.ChannelID,C.ChannelCategoryID,C.Channel,CC.ChannelCategory from [nissimDW].[dbo].[Channel] C inner join [nissimDW].[dbo].[ChannelCategory] CC
 on C.ChannelCategoryID=CC.ChannelCategoryID) as S
