@@ -34,10 +34,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[Store]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+	
 	
 	CREATE TABLE [dbo].[Store](
 		[StoreID] [int] NULL,
@@ -70,10 +67,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[ProductType]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+	
 	
 	CREATE TABLE [dbo].[ProductType](
 		[ProductTypeID] [int] NULL,
@@ -104,10 +98,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[ProductCategory]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+	
 	
 	CREATE TABLE [dbo].[ProductCategory](
 		[ProductCategoryID] [int] NULL,
@@ -131,10 +122,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[Product]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+
 
 	CREATE TABLE [dbo].[Product](
 		[ProductID] [int] NULL,
@@ -186,10 +174,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[Reseller]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+
 	
 	CREATE TABLE [dbo].[Reseller](
 		[ResellerID] [uniqueidentifier] NULL,
@@ -219,10 +204,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[Customer]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+
 	
 	CREATE TABLE [dbo].[Customer](
 		[CustomerID] [uniqueidentifier] NULL,
@@ -255,10 +237,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[Channel]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+
 	
 	CREATE TABLE [dbo].[Channel](
 		[ChannelID] [int] NULL,
@@ -284,10 +263,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	USE [nissimDW]
 	GO
 	/****** Object:  Table [dbo].[ProductTarget]    Script Date: 3/13/2017 1:11:56 PM ******/
-	SET ANSI_NULLS ON
-	GO
-	SET QUOTED_IDENTIFIER ON
-	GO
+
 	
 	CREATE TABLE [dbo].[ProductTarget](
 		[ProductID] [varchar](50) NULL,
@@ -586,6 +562,7 @@ Note: Insertion into SalesFact staging table was not included here because there
 	SET IDENTITY_INSERT dbo.DimReseller OFF;
   
 ### Inset into Store dimension table using Store staging table
+
 	MERGE [nissimDW].[dbo].[DimStore] as T
 	USING 
 	(

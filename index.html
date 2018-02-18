@@ -342,10 +342,7 @@ include_graphics(&quot;Dimensional_Model.jpg&quot;)</code></pre>
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[Store]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[Store](
     [StoreID] [int] NULL,
@@ -378,10 +375,7 @@ INSERT [dbo].[Store] ([StoreID], [SubSegmentID], [StoreNumber], [StoreManager], 
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[ProductType]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[ProductType](
     [ProductTypeID] [int] NULL,
@@ -411,10 +405,7 @@ INSERT [dbo].[ProductType] ([ProductTypeID], [ProductCategoryID], [ProductType],
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[ProductCategory]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[ProductCategory](
     [ProductCategoryID] [int] NULL,
@@ -437,10 +428,7 @@ INSERT [dbo].[ProductCategory] ([ProductCategoryID], [ProductCategory], [Created
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[Product]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[Product](
     [ProductID] [int] NULL,
@@ -491,10 +479,7 @@ INSERT [dbo].[Product] ([ProductID], [ProductTypeID], [Product], [Color], [Style
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[Reseller]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[Reseller](
     [ResellerID] [uniqueidentifier] NULL,
@@ -523,10 +508,7 @@ INSERT [dbo].[Reseller] ([ResellerID], [Contact], [EmailAddress], [Address], [Ci
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[Customer]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[Customer](
     [CustomerID] [uniqueidentifier] NULL,
@@ -558,10 +540,7 @@ INSERT [dbo].[Customer] ([CustomerID], [SubSegmentID], [FirstName], [LastName], 
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[Channel]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[Channel](
     [ChannelID] [int] NULL,
@@ -586,10 +565,7 @@ INSERT [dbo].[Channel] ([ChannelID], [ChannelCategoryID], [Channel], [CreatedDat
 <pre><code>USE [nissimDW]
 GO
 /****** Object:  Table [dbo].[ProductTarget]    Script Date: 3/13/2017 1:11:56 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 
 CREATE TABLE [dbo].[ProductTarget](
     [ProductID] [varchar](50) NULL,
