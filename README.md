@@ -1,4 +1,4 @@
-# Sales-Data-Warehouse
+# Data Warehouse Solution for a Retail Company
 ### In this project, I built a data warehouse from scratch, followed by Tableau visualizations to draw insights from the data.
 
 ### Steps:
